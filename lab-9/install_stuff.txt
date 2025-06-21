@@ -1,0 +1,52 @@
+export TMPDIR='/var/tmp'
+
+
+Here’s a set of commands you can run step by step in your terminal to:
+
+1. Create a virtual environment
+2. Activate it
+3. Install required packages from `requirements.txt`
+
+---
+
+### ✅ For **Linux / macOS**:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+
+pip install torch torchvision numpy
+
+---
+
+### ✅ For **Windows (CMD)**:
+
+```cmd
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+---
+
+### ✅ For **Windows (PowerShell)**:
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+---
+
+Let me know if you also need to generate a `requirements.txt` for your current project.
+
+
+https://docs.pytorch.org/vision/main/generated/torchvision.ops.deform_conv2d.html
+
+
+
+https://www.uber.com/en-PE/blog/neural-networks-jpeg/
