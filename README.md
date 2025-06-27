@@ -1,3 +1,3 @@
 # trabajo-final-machine-learning
-xiomara
+xiomara- xiomara.siche@utec.edu.pe
 Coralie
