@@ -9,11 +9,11 @@ from dataset_dynamic_corruption import CorruptingDataset
 from activation_dropout import ActivationDropout
 
 # Hyperparameters
-BATCH_SIZE = 64
-EPOCHS = 20
+BATCH_SIZE = 512
+EPOCHS = 40
 LR = 1e-3
 CORRUPTION_PROB = 0.1
-ACTIVATION_DROPOUT_RETAIN_PROB = 0.6
+ACTIVATION_DROPOUT_RETAIN_PROB = 0.7
 
 # Load dataset
 datasets, input_dim = load_stroke_data_with_masks()
@@ -36,14 +36,20 @@ test_loader = get_loader(*datasets["test"])
 class StrokeNet(nn.Module):
     def __init__(self, input_dim, dropout_retain_prob=0.5):
         super().__init__()
+        print(dropout_retain_prob)
         self.net = nn.Sequential(
             nn.Linear(input_dim, 64),
             nn.ReLU(),
             ActivationDropout(base_retain_prob=dropout_retain_prob),
-            nn.Linear(64, 32),
+            nn.Linear(64, 40),
             nn.ReLU(),
-            nn.Linear(32, 1),
+            ActivationDropout(base_retain_prob=dropout_retain_prob),
+            nn.Linear(40, 14),
+            nn.ReLU(),
+            ActivationDropout(base_retain_prob=dropout_retain_prob),
+            nn.Linear(14, 1),
             nn.Sigmoid()
+            #ActivationDropout(base_retain_prob=dropout_retain_prob),
         )
 
     def forward(self, x):
