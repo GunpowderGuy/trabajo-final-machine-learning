@@ -10,15 +10,15 @@ from activation_dropout import ActivationDropout
 BATCH_SIZE = 512
 EPOCHS = 40
 LR = 1e-3
-SEED = 42
+SEED = 4285898
 EMBED_DIM = 4
-ACTIVATION_DROPOUT_RETAIN_PROB = 0.7
+ACTIVATION_DROPOUT_RETAIN_PROB = 0.3
 
 # Cargar datos
 datasets, num_cols, bin_cols, cat_cardinalities = load_stroke_data(
     path='data.csv',
-    test_size=0.2,
-    val_size=0.2,
+    test_size=0.01,
+    val_size=0.01,
     seed=SEED
 )
 
