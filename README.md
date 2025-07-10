@@ -7,4 +7,4 @@
 
 documento : https://www.overleaf.com/project/686adcbedbc28fdf6d04e44e
 
-GUI : https://colab.research.google.com/drive/1ymqxsvKrf9e5MAQO6qY4_iR1dZuItJdu?authuser=1
+GUI : https://colab.research.google.com/drive/1j3g8EZZwqKW0HZ_HB6d83w7KihUVRW60
