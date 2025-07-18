@@ -10,6 +10,7 @@ from activation_dropout import ActivationDropout
 # Captum imports
 from captum.attr import IntegratedGradients
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 
 # --------------------
 # Hyperparameters
@@ -19,13 +20,8 @@ EPOCHS = 40
 LR = 1e-3
 SEED = 4285898
 EMBED_DIM = 4
-DROPOUT_P = 0.9
-EXPLAIN_BATCH = 100  # how many test samples to explain
-
-# --------------------
-# Reproducibility
-# --------------------
-torch.manual_seed(SEED)
+DROPOUT_P = 0.3
+EXPLAIN_BATCH = 5
 
 # --------------------
 # 1. Load data
@@ -33,19 +29,25 @@ torch.manual_seed(SEED)
 datasets, num_cols, bin_cols, cat_cardinalities = load_stroke_data(
     path='data.csv',
     test_size=0.1,
-    val_size=0.01,
+    val_size=0.1,
     seed=SEED
 )
 Xn_train, Xb_train, Xc_train, y_train = datasets['train']
 Xn_val,   Xb_val,   Xc_val,   y_val   = datasets['val']
 Xn_test,  Xb_test,  Xc_test,  y_test  = datasets['test']
 
-train_loader = DataLoader(TensorDataset(Xn_train, Xb_train, Xc_train, y_train),
-                          batch_size=BATCH_SIZE, shuffle=True)
-val_loader   = DataLoader(TensorDataset(Xn_val,   Xb_val,   Xc_val,   y_val),
-                          batch_size=BATCH_SIZE, shuffle=False)
-test_loader  = DataLoader(TensorDataset(Xn_test,  Xb_test,  Xc_test,  y_test),
-                          batch_size=BATCH_SIZE, shuffle=False)
+train_loader = DataLoader(
+    TensorDataset(Xn_train, Xb_train, Xc_train, y_train),
+    batch_size=BATCH_SIZE, shuffle=True
+)
+val_loader   = DataLoader(
+    TensorDataset(Xn_val,   Xb_val,   Xc_val,   y_val),
+    batch_size=BATCH_SIZE, shuffle=False
+)
+test_loader  = DataLoader(
+    TensorDataset(Xn_test,  Xb_test,  Xc_test,  y_test),
+    batch_size=BATCH_SIZE, shuffle=False
+)
 
 # --------------------
 # 2. Define model
@@ -73,6 +75,11 @@ class StrokeNet(nn.Module):
         x = torch.cat([x_num, x_bin, *emb_list], dim=1)
         return self.net(x)
 
+# --------------------
+# Device & Model
+# --------------------
+
+torch.manual_seed(SEED)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = StrokeNet(
     num_numeric=len(num_cols),
@@ -123,6 +130,21 @@ with torch.no_grad():
         total += y.size(0)
 print(f"       Test Acc: {correct/total:.2%}")
 
+# Confusion Matrix
+all_preds = []
+all_labels = []
+with torch.no_grad():
+    for Xn, Xb, Xc, y in test_loader:
+        Xn, Xb, Xc, y = [t.to(device) for t in (Xn, Xb, Xc, y)]
+        preds = (model(Xn, Xb, Xc) > 0.5).int().cpu().numpy().flatten()
+        labels = y.int().cpu().numpy().flatten()
+        all_preds.extend(preds)
+        all_labels.extend(labels)
+
+cm = confusion_matrix(all_labels, all_preds)
+print("Confusion Matrix:")
+print(cm)
+
 # --------------------
 # 4. Explainability with Captum
 # --------------------
@@ -138,7 +160,6 @@ Xc_batch = Xc_batch[:EXPLAIN_BATCH].to(device)  # will be tiled below
 baseline_num = torch.zeros_like(Xn_batch)
 baseline_bin = torch.zeros_like(Xb_batch)
 
-# -- FIXED: forward_fn now takes categorical as an explicit arg --
 def forward_fn(x_num, x_bin, x_cat):
     return model(x_num, x_bin, x_cat)
 
